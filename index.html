@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>AI小票识别 MVP 原型</title>
+  <style>
+    :root {
+      --bg: #eef2f5;
+      --phone: #f7f9fb;
+      --ink: #17202a;
+      --muted: #687385;
+      --line: #d9e1e8;
+      --surface: #ffffff;
+      --soft: #f2f6f8;
+      --brand: #0f766e;
+      --brand-strong: #0b5d55;
+      --blue: #2563eb;
+      --amber: #b7791f;
+      --amber-bg: #fff7df;
+      --green-bg: #e8f7ef;
+      --red: #bd2c2c;
+      --red-bg: #ffebea;
+      --shadow: 0 18px 55px rgba(20, 36, 50, .18);
+      --radius: 18px;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(15, 118, 110, .14), transparent 34%),
+        linear-gradient(320deg, rgba(37, 99, 235, .12), transparent 38%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .stage {
+      width: min(100vw, 440px);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 12px;
+    }
+
+    .phone {
+      width: min(100%, 390px);
+      height: min(844px, calc(100vh - 24px));
+      min-height: 720px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      background: var(--phone);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.74);
+    }
+
+    .statusbar {
+      height: 36px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 22px 7px;
+      color: #1e293b;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .signal {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #1e293b;
+    }
+
+    .app {
+      height: calc(100% - 36px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    header {
+      padding: 12px 18px 14px;
+      background: rgba(247, 249, 251, .92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(217, 225, 232, .72);
+      overflow: hidden;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title {
+      min-width: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .main {
+      flex: 1;
+      overflow: auto;
+      overflow-x: hidden;
+      padding: 16px 14px 18px;
+      scrollbar-width: none;
+    }
+
+    .main::-webkit-scrollbar { display: none; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid rgba(217, 225, 232, .9);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(17, 24, 39, .06);
+      overflow: hidden;
+    }
+
+    .upload-card {
+      padding: 16px;
+    }
+
+    .receipt-preview {
+      height: 220px;
+      border-radius: 15px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.12)),
+        repeating-linear-gradient(0deg, #fff 0 26px, #f7fafc 26px 27px);
+      border: 1px dashed #b9c7d4;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .receipt-paper {
+      width: 64%;
+      height: 82%;
+      background: #fffdf8;
+      border: 1px solid #eee2c4;
+      border-radius: 8px;
+      box-shadow: 0 12px 22px rgba(0,0,0,.10);
+      padding: 16px 14px;
+      transform: rotate(-2deg);
+    }
+
+    .receipt-stack {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .receipt-stack .receipt-paper {
+      position: absolute;
+      width: 48%;
+      height: 78%;
+      transform: rotate(var(--tilt, -2deg)) translateX(var(--offset, 0));
+      z-index: var(--level, 1);
+    }
+
+    .receipt-stack .receipt-paper:nth-child(2) {
+      --tilt: 3deg;
+      --offset: 44px;
+      --level: 2;
+    }
+
+    .receipt-stack .receipt-paper:nth-child(3) {
+      --tilt: -5deg;
+      --offset: -44px;
+      --level: 3;
+    }
+
+    .upload-counter {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      z-index: 4;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: rgba(16, 37, 60, .82);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .upload-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .upload-slot {
+      min-height: 48px;
+      border: 1px dashed #c5d1dc;
+      border-radius: 13px;
+      background: #f7fafc;
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.25;
+      padding: 7px;
+      overflow: hidden;
+    }
+
+    .upload-slot.filled {
+      border-style: solid;
+      background: #e8f7ef;
+      color: var(--brand-strong);
+      font-weight: 850;
+    }
+
+    .upload-tip {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .upload-empty {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .paper-title {
+      height: 10px;
+      width: 72%;
+      border-radius: 20px;
+      background: #26313f;
+      margin: 0 auto 14px;
+    }
+
+    .paper-line {
+      height: 7px;
+      border-radius: 20px;
+      background: #b4bdc8;
+      margin: 10px 0;
+    }
+
+    .paper-line:nth-child(3) { width: 82%; }
+    .paper-line:nth-child(4) { width: 58%; }
+    .paper-line:nth-child(5) { width: 76%; }
+    .paper-line:nth-child(6) { width: 45%; }
+    .paper-line.total {
+      margin-top: 18px;
+      width: 70%;
+      background: #0f766e;
+    }
+
+    .upload-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      height: 46px;
+      border: 0;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 850;
+      font-size: 14px;
+      letter-spacing: 0;
+      cursor: pointer;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .btn:active { transform: scale(.98); }
+
+    .btn.primary {
+      color: #fff;
+      background: var(--brand);
+      box-shadow: 0 10px 18px rgba(15, 118, 110, .25);
+    }
+
+    .btn.secondary {
+      color: #17324d;
+      background: #edf3f7;
+      border: 1px solid #d4dee7;
+    }
+
+    .btn.block {
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    .section-title {
+      margin: 18px 3px 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .tiny-link {
+      border: 0;
+      background: transparent;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 0;
+      cursor: pointer;
+    }
+
+    .rules {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .rule {
+      padding: 12px;
+      background: var(--surface);
+      border: 1px solid rgba(217, 225, 232, .9);
+      border-radius: 16px;
+      min-height: 86px;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .rule b {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .rule span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.38;
+    }
+
+    .scan-panel {
+      padding: 18px 16px 20px;
+      text-align: center;
+    }
+
+    .scan-window {
+      height: 250px;
+      border-radius: 18px;
+      background: #111827;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+
+    .scan-receipt {
+      position: absolute;
+      inset: 24px 58px;
+      border-radius: 10px;
+      background: #fffdf8;
+      padding: 18px 14px;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: 34px;
+      height: 3px;
+      border-radius: 20px;
+      background: #35f2c0;
+      box-shadow: 0 0 18px rgba(53, 242, 192, .9);
+      animation: scanning 1.7s ease-in-out infinite;
+    }
+
+    @keyframes scanning {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(172px); }
+    }
+
+    .scan-text {
+      margin-top: 14px;
+      font-weight: 850;
+      line-height: 1.35;
+    }
+
+    .scan-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .progress {
+      margin-top: 14px;
+      height: 8px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: #dfe7ee;
+    }
+
+    .bar {
+      height: 100%;
+      width: 68%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--brand), #2f80ed);
+      animation: progress 1.7s ease-in-out infinite;
+    }
+
+    @keyframes progress {
+      0% { width: 18%; }
+      70% { width: 86%; }
+      100% { width: 92%; }
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .metric {
+      background: var(--surface);
+      border: 1px solid rgba(217, 225, 232, .9);
+      border-radius: 16px;
+      padding: 11px 9px;
+      text-align: center;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.1;
+      color: #10253c;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .fields {
+      padding: 4px 0;
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 10px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(217, 225, 232, .76);
+    }
+
+    .field:first-child { border-top: 0; }
+
+    .label {
+      padding-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .input-wrap {
+      min-width: 0;
+    }
+
+    .value-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field input {
+      width: 100%;
+      height: 38px;
+      border: 1px solid #d6e0e8;
+      border-radius: 12px;
+      background: #f9fbfc;
+      padding: 0 10px;
+      color: var(--ink);
+      font-weight: 760;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: #46aaa0;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, .12);
+      background: #fff;
+    }
+
+    .confidence {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .pill.ok {
+      color: #0c6845;
+      background: var(--green-bg);
+    }
+
+    .pill.warn {
+      color: var(--amber);
+      background: var(--amber-bg);
+    }
+
+    .pill.danger {
+      color: var(--red);
+      background: var(--red-bg);
+    }
+
+    .checklist {
+      padding: 4px 0;
+    }
+
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(217, 225, 232, .76);
+    }
+
+    .check-row:first-child { border-top: 0; }
+
+    .check-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .check-icon.ok { background: var(--brand); }
+    .check-icon.warn { background: #c98518; }
+    .check-icon.danger { background: var(--red); }
+
+    .check-copy b {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .check-copy span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.36;
+    }
+
+    .toast {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      padding: 14px 14px;
+      border-radius: 16px;
+      background: #10253c;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 16px 34px rgba(16, 37, 60, .26);
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+      transition: opacity .24s ease, transform .24s ease;
+      font-size: 13px;
+      line-height: 1.35;
+      z-index: 5;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast b {
+      display: block;
+      font-size: 13px;
+    }
+
+    .empty {
+      padding: 32px 18px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty svg {
+      width: 42px;
+      height: 42px;
+      margin-bottom: 8px;
+      color: #a6b3bf;
+    }
+
+    .empty b {
+      display: block;
+      color: #233041;
+      font-size: 15px;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 900px) {
+      body { background: var(--phone); }
+      .stage { padding: 0; }
+      .phone {
+        width: 100vw;
+        height: 100vh;
+        min-height: 100vh;
+        border-radius: 0;
+        border: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="phone" aria-label="AI小票识别MVP移动端原型">
+      <div class="statusbar">
+        <span>9:41</span>
+        <span class="signal" aria-hidden="true">
+          <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="1" y="3" width="14" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M16 5.2v2.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="5" width="9" height="3" rx="1" fill="currentColor"/></svg>
+        </span>
+      </div>
+
+      <div class="app">
+        <header>
+          <div class="topline">
+            <div class="title">
+              <h1>AI小票识别</h1>
+              <div class="sub">门店买赠核销 · 8/1 MVP</div>
+            </div>
+          </div>
+        </header>
+
+        <div class="main">
+          <section class="screen active" id="screen-scan">
+            <div class="panel upload-card">
+              <div class="receipt-preview">
+                <div class="upload-counter" id="uploadCounter">已上传 1/3</div>
+                <div class="receipt-stack" id="receiptStack" aria-hidden="true"></div>
+              </div>
+              <div class="upload-list" id="uploadList"></div>
+              <div class="upload-tip">最多上传 3 张小票，建议按同一笔核销顺序上传，便于 AI 合并识别。</div>
+              <input class="file-input" id="receiptInput" type="file" accept="image/*" multiple onchange="handleReceiptUpload(this.files)" />
+              <div class="upload-actions">
+                <button class="btn primary" type="button" onclick="startScan('pass')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7V5a1 1 0 0 1 1-1h2M17 4h2a1 1 0 0 1 1 1v2M20 17v2a1 1 0 0 1-1 1h-2M7 20H5a1 1 0 0 1-1-1v-2M7 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  AI识别
+                </button>
+                <button class="btn secondary" type="button" onclick="openReceiptPicker()">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  上传小票
+                </button>
+              </div>
+            </div>
+
+            <div class="section-title">
+              <h2>校验字段</h2>
+            </div>
+            <div class="rules">
+              <div class="rule"><b>门店名称</b><span>对照门店标准名单，支持简称匹配</span></div>
+              <div class="rule"><b>KA 名称</b><span>匹配 KA 标准表，标记疑似别名</span></div>
+              <div class="rule"><b>奶粉品牌</b><span>识别品牌关键词，支持人工修正</span></div>
+              <div class="rule"><b>日期 / 数量</b><span>校验活动期与买赠罐数规则</span></div>
+            </div>
+          </section>
+
+          <section class="screen" id="screen-loading">
+            <div class="panel scan-panel">
+              <div class="scan-window">
+                <div class="scan-receipt">
+                  <div class="paper-title"></div>
+                  <div class="paper-line"></div>
+                  <div class="paper-line"></div>
+                  <div class="paper-line"></div>
+                  <div class="paper-line"></div>
+                  <div class="paper-line total"></div>
+                </div>
+                <div class="scan-line"></div>
+              </div>
+              <div class="scan-text">正在识别小票字段</div>
+              <div class="scan-sub">图片 OCR、字段抽取、标准名单匹配同步处理中</div>
+              <div class="progress"><div class="bar"></div></div>
+            </div>
+          </section>
+
+          <section class="screen" id="screen-result">
+            <div class="summary">
+              <div class="metric"><strong id="score">92</strong><span>综合分</span></div>
+              <div class="metric"><strong id="matched">4/5</strong><span>字段通过</span></div>
+              <div class="metric"><strong id="reviewCount">1</strong><span>需确认</span></div>
+            </div>
+
+            <div class="section-title">
+              <h2>识别结果</h2>
+              <button class="tiny-link" type="button" onclick="resetFields()">恢复AI值</button>
+            </div>
+            <div class="panel fields" id="fields"></div>
+
+            <div class="section-title">
+              <h2>规则校验</h2>
+            </div>
+            <div class="panel checklist" id="checks"></div>
+
+            <button class="btn primary block" type="button" onclick="submitConfirm()">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              确认并提交
+            </button>
+          </section>
+
+        </div>
+
+        <div class="toast" id="toast">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <div><b>已提交识别结果</b><span>原图、AI值、修正值与校验结果已留痕</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const datasets = {
+      pass: [
+        { key: 'store', label: '门店名称', ai: '大润发闵行店', confidence: 96, status: 'ok', hint: '命中门店标准名单' },
+        { key: 'ka', label: 'KA 名称', ai: '大润发', confidence: 93, status: 'ok', hint: '命中 KA 标准表' },
+        { key: 'brand', label: '奶粉品牌', ai: '美素佳儿', confidence: 91, status: 'ok', hint: '命中品牌词库' },
+        { key: 'date', label: '验证日期', ai: '2026/07/31', confidence: 88, status: 'ok', hint: '在活动有效期内' },
+        { key: 'qty', label: '数量', ai: '3', confidence: 84, status: 'warn', hint: '建议人工确认罐数' }
+      ],
+      review: [
+        { key: 'store', label: '门店名称', ai: '华润万家古美', confidence: 78, status: 'warn', hint: '疑似命中华润万家古美店' },
+        { key: 'ka', label: 'KA 名称', ai: '华润', confidence: 61, status: 'warn', hint: '建议选择标准 KA 名称' },
+        { key: 'brand', label: '奶粉品牌', ai: '皇家美素', confidence: 73, status: 'warn', hint: '疑似皇家美素佳儿' },
+        { key: 'date', label: '验证日期', ai: '2026/08/02', confidence: 86, status: 'danger', hint: '不在当前活动日期范围内' },
+        { key: 'qty', label: '数量', ai: '2', confidence: 67, status: 'danger', hint: '未满足 3 罐兑换规则' }
+      ]
+    };
+
+    let currentType = 'pass';
+    let fields = JSON.parse(JSON.stringify(datasets.pass));
+    let uploadedReceipts = [];
+
+    function receiptPaperTemplate() {
+      return `
+        <div class="receipt-paper">
+          <div class="paper-title"></div>
+          <div class="paper-line"></div>
+          <div class="paper-line"></div>
+          <div class="paper-line"></div>
+          <div class="paper-line"></div>
+          <div class="paper-line total"></div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function renderReceiptUploads() {
+      const stack = document.getElementById('receiptStack');
+      const list = document.getElementById('uploadList');
+      const counter = document.getElementById('uploadCounter');
+
+      counter.textContent = `已上传 ${uploadedReceipts.length}/3`;
+      stack.innerHTML = uploadedReceipts.length
+        ? uploadedReceipts.map(receiptPaperTemplate).join('')
+        : `<div class="upload-empty">点击上传小票<br>最多支持 3 张</div>`;
+      list.innerHTML = [0, 1, 2].map(index => {
+        const receipt = uploadedReceipts[index];
+        if (!receipt) {
+          return `<div class="upload-slot">待上传<br>小票 ${index + 1}</div>`;
+        }
+        return `<div class="upload-slot filled">小票 ${index + 1}<br>${escapeHtml(receipt.name)}</div>`;
+      }).join('');
+    }
+
+    function openReceiptPicker() {
+      if (uploadedReceipts.length >= 3) {
+        showToast('最多上传 3 张小票', '如需更换，请刷新后重新选择小票图片');
+        return;
+      }
+      document.getElementById('receiptInput').click();
+    }
+
+    function handleReceiptUpload(files) {
+      const available = 3 - uploadedReceipts.length;
+      const selected = Array.from(files || []);
+      const accepted = selected.slice(0, available).map(file => ({
+        name: file.name || '小票图片',
+        source: 'upload'
+      }));
+      uploadedReceipts = uploadedReceipts.concat(accepted).slice(0, 3);
+      renderReceiptUploads();
+      document.getElementById('receiptInput').value = '';
+
+      if (selected.length > available) {
+        showToast('已按上限保留 3 张', '多余小票未加入本次识别');
+      } else if (accepted.length > 0) {
+        showToast('小票上传成功', `当前已上传 ${uploadedReceipts.length}/3 张`);
+      }
+    }
+
+    function setScreen(id) {
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.toggle('active', screen.id === id);
+      });
+    }
+
+    function startScan(type) {
+      if (uploadedReceipts.length === 0) {
+        uploadedReceipts = [{ name: 'AI演示样张', source: 'sample' }];
+        renderReceiptUploads();
+      }
+      currentType = type;
+      setScreen('screen-loading');
+      window.setTimeout(() => showResult(type), 1200);
+    }
+
+    function showResult(type = currentType) {
+      currentType = type;
+      fields = JSON.parse(JSON.stringify(datasets[type]));
+      renderResult();
+      setScreen('screen-result');
+    }
+
+    function resetFields() {
+      fields = JSON.parse(JSON.stringify(datasets[currentType]));
+      renderResult();
+    }
+
+    function renderResult() {
+      const fieldRoot = document.getElementById('fields');
+      const checkRoot = document.getElementById('checks');
+      const okCount = fields.filter(f => f.status === 'ok').length;
+      const reviewCount = fields.length - okCount;
+      const avg = Math.round(fields.reduce((sum, f) => sum + f.confidence, 0) / fields.length);
+
+      document.getElementById('score').textContent = avg;
+      document.getElementById('matched').textContent = `${okCount}/${fields.length}`;
+      document.getElementById('reviewCount').textContent = reviewCount;
+
+      fieldRoot.innerHTML = fields.map((field, index) => `
+        <div class="field">
+          <div class="label">${field.label}</div>
+          <div class="input-wrap">
+            <div class="value-row">
+              <input aria-label="${field.label}" value="${field.ai}" oninput="updateField(${index}, this.value)" />
+            </div>
+            <div class="confidence">
+              <span class="pill ${field.status}">${statusText(field.status)}</span>
+              <span>置信度 ${field.confidence}% · ${field.hint}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      checkRoot.innerHTML = fields.map(field => `
+        <div class="check-row">
+          <div class="check-icon ${field.status}">${field.status === 'ok' ? '✓' : '!'}</div>
+          <div class="check-copy">
+            <b>${field.label}校验${field.status === 'ok' ? '通过' : '待确认'}</b>
+            <span>${field.hint}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateField(index, value) {
+      fields[index].ai = value;
+      if (fields[index].status !== 'ok') {
+        fields[index].status = 'warn';
+        fields[index].hint = '已人工修改，提交后记录修正值';
+        fields[index].confidence = Math.max(fields[index].confidence, 80);
+      }
+      renderResult();
+    }
+
+    function statusText(status) {
+      if (status === 'ok') return '通过';
+      if (status === 'danger') return '异常';
+      return '确认';
+    }
+
+    function submitConfirm() {
+      showToast('已提交识别结果', '原图、AI值、修正值与校验结果已留痕');
+    }
+
+    function showToast(title, detail) {
+      const toast = document.getElementById('toast');
+      toast.querySelector('b').textContent = title;
+      toast.querySelector('span').textContent = detail;
+      toast.classList.add('show');
+      window.setTimeout(() => toast.classList.remove('show'), 2300);
+    }
+
+    renderReceiptUploads();
+    renderResult();
+  </script>
+</body>
+</html>
