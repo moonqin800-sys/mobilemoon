@@ -1,0 +1,1116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>TrackEasy 溯源获取质检报告方案原型</title>
+  <style>
+    :root {
+      --bg: #edf3f7;
+      --phone: #f7fafc;
+      --ink: #142033;
+      --muted: #667487;
+      --line: #d8e2ec;
+      --surface: #ffffff;
+      --soft: #f0f5f8;
+      --brand: #0ea578;
+      --brand-dark: #08765b;
+      --gold: #e8bd43;
+      --gold-soft: #fff5d5;
+      --blue: #0879bd;
+      --blue-soft: #e6f3fb;
+      --red: #b42318;
+      --shadow: 0 22px 60px rgba(24, 39, 58, .18);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background:
+        linear-gradient(135deg, rgba(14, 165, 120, .16), transparent 31%),
+        linear-gradient(315deg, rgba(8, 121, 189, .12), transparent 34%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .stage {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px 12px;
+    }
+
+    .phone {
+      position: relative;
+      width: min(calc(100vw - 24px), 390px);
+      min-width: 0;
+      height: min(844px, calc(100vh - 24px));
+      min-height: 720px;
+      overflow: hidden;
+      border-radius: 34px;
+      background: var(--phone);
+      border: 1px solid rgba(255,255,255,.78);
+      box-shadow: var(--shadow);
+    }
+
+    .statusbar {
+      height: 36px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 22px 7px;
+      color: #172033;
+      font-size: 12px;
+      font-weight: 780;
+    }
+
+    .signal {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #172033;
+    }
+
+    .app {
+      height: calc(100% - 36px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--phone);
+    }
+
+    header {
+      flex: 0 0 auto;
+      padding: 11px 16px 13px;
+      background: rgba(247, 250, 252, .95);
+      border-bottom: 1px solid rgba(216, 226, 236, .82);
+      backdrop-filter: blur(14px);
+    }
+
+    .navline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #1f2937;
+      background: #fff;
+      border: 1px solid rgba(216, 226, 236, .94);
+    }
+
+    .icon-btn svg,
+    .btn svg,
+    .quick svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2.25;
+    }
+
+    .title {
+      min-width: 0;
+      flex: 1;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .main {
+      flex: 1;
+      overflow: auto;
+      overflow-x: hidden;
+      padding: 14px 14px 18px;
+      scrollbar-width: none;
+    }
+
+    .main::-webkit-scrollbar { display: none; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 250px;
+      padding: 16px;
+      border-radius: 20px;
+      background:
+        linear-gradient(135deg, rgba(2, 73, 112, .82), rgba(11, 115, 91, .82)),
+        linear-gradient(180deg, #2e7ec7, #116b52);
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(8, 60, 84, .18);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -28px -64px 32px;
+      height: 130px;
+      border-radius: 50% 50% 0 0;
+      background: rgba(255, 255, 255, .17);
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      width: 58%;
+    }
+
+    .hero-copy h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .hero-copy p {
+      margin: 9px 0 0;
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .product-visual {
+      position: absolute;
+      right: 20px;
+      top: 52px;
+      z-index: 2;
+      width: 82px;
+      height: 76px;
+    }
+
+    .pack {
+      position: absolute;
+      right: 28px;
+      bottom: 8px;
+      width: 40px;
+      height: 68px;
+      border-radius: 9px;
+      background: linear-gradient(180deg, #f7fbff 0 28%, #1e73be 28% 62%, #f8fbff 62%);
+      box-shadow: 0 13px 22px rgba(0,0,0,.24);
+      border: 1px solid rgba(255,255,255,.78);
+      display: grid;
+      place-items: center;
+      color: #114c88;
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.15;
+    }
+
+    .can {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 46px;
+      height: 52px;
+      border-radius: 13px 13px 18px 18px;
+      background:
+        linear-gradient(180deg, #f9fcff 0 22%, #0f6fba 22% 63%, #f4f8fc 63%),
+        #fff;
+      border: 1px solid rgba(255,255,255,.78);
+      box-shadow: 0 13px 22px rgba(0,0,0,.22);
+    }
+
+    .can::before {
+      content: "";
+      position: absolute;
+      left: 9px;
+      right: 9px;
+      top: -7px;
+      height: 14px;
+      border-radius: 50%;
+      background: #e9eff5;
+      border: 1px solid rgba(255,255,255,.9);
+    }
+
+    .hero-actions {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 24px;
+    }
+
+    .quick {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border-radius: 15px;
+      color: #123047;
+      background: rgba(255,255,255,.92);
+      font-size: 13px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(0,0,0,.13);
+    }
+
+    .notice {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--gold-soft);
+      border: 1px solid #f0cf6a;
+      color: #5f4208;
+    }
+
+    .notice svg {
+      flex: 0 0 auto;
+      width: 19px;
+      height: 19px;
+      color: #a86708;
+      margin-top: 1px;
+    }
+
+    .notice strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .notice span {
+      display: block;
+      color: #715113;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .section-title {
+      margin: 16px 2px 9px;
+      color: #243247;
+      font-size: 14px;
+      line-height: 1.35;
+      font-weight: 900;
+    }
+
+    .path-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .path-card {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 76px;
+      padding: 12px;
+      border-radius: 17px;
+      background: var(--surface);
+      border: 1px solid rgba(216, 226, 236, .95);
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+    }
+
+    .path-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .path-icon.green {
+      background: var(--brand);
+    }
+
+    .path-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2.25;
+    }
+
+    .path-card strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+      line-height: 1.3;
+      font-weight: 900;
+    }
+
+    .path-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.38;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 25px;
+      padding: 0 9px;
+      border-radius: 999px;
+      color: var(--brand-dark);
+      background: #e7f7f1;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .pill.blue {
+      color: var(--blue);
+      background: var(--blue-soft);
+    }
+
+    .info-card {
+      margin-top: 12px;
+      padding: 13px;
+      border-radius: 17px;
+      background: var(--surface);
+      border: 1px solid rgba(216, 226, 236, .95);
+    }
+
+    .info-card h3 {
+      margin: 0 0 9px;
+      font-size: 14px;
+      line-height: 1.35;
+      font-weight: 900;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .field {
+      min-height: 54px;
+      padding: 9px 10px;
+      border-radius: 13px;
+      background: var(--soft);
+      border: 1px solid rgba(216, 226, 236, .82);
+    }
+
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.25;
+      margin-bottom: 5px;
+    }
+
+    .field strong {
+      display: block;
+      font-size: 13px;
+      line-height: 1.25;
+      font-weight: 900;
+    }
+
+    .actions {
+      position: sticky;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 9px;
+      padding: 12px 0 0;
+      background: linear-gradient(180deg, rgba(247,250,252,0), var(--phone) 36%);
+    }
+
+    .btn {
+      min-width: 0;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: 900;
+      white-space: nowrap;
+      transition: transform .16s ease, background .16s ease;
+    }
+
+    .btn:active {
+      transform: scale(.98);
+    }
+
+    .btn.secondary {
+      color: #263247;
+      background: #fff;
+      border: 1px solid rgba(184, 198, 211, .96);
+    }
+
+    .btn.primary {
+      color: #fff;
+      background: var(--brand);
+      box-shadow: 0 11px 19px rgba(14, 165, 120, .24);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 36px 0 0;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(20, 32, 51, .42);
+      backdrop-filter: blur(4px);
+      z-index: 20;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      width: calc(100% - 28px);
+      max-height: calc(100% - 26px);
+      margin-bottom: 14px;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 22px 54px rgba(15, 23, 42, .24);
+      animation: rise .22s ease both;
+    }
+
+    @keyframes rise {
+      from { transform: translateY(18px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-head h3 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.35;
+      font-weight: 950;
+    }
+
+    .modal-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .modal-body {
+      padding: 14px 16px 16px;
+    }
+
+    .batch-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .input-label {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      font-weight: 800;
+    }
+
+    .batch-input {
+      width: 100%;
+      height: 48px;
+      padding: 0 13px;
+      border-radius: 14px;
+      border: 1px solid #b9c9d8;
+      outline: 0;
+      color: #0f2538;
+      background: #f8fbfd;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .report-panel {
+      text-align: center;
+    }
+
+    .batch-no {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: #123047;
+      background: var(--blue-soft);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .report-tile {
+      margin: 14px auto 13px;
+      width: min(100%, 250px);
+      min-height: 190px;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid #8ab8d6;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.95), rgba(244, 249, 252, .95)),
+        repeating-linear-gradient(0deg, transparent 0 25px, rgba(8,121,189,.08) 25px 26px);
+      color: #102033;
+    }
+
+    .report-tile strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.25;
+      font-weight: 950;
+      margin-bottom: 8px;
+    }
+
+    .report-tile span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .modal-actions {
+      display: grid;
+      gap: 9px;
+      margin-top: 13px;
+    }
+
+    .batch-box .btn.primary,
+    .modal-actions .btn.primary {
+      margin-top: 2px;
+    }
+
+    .viewer {
+      position: absolute;
+      inset: 36px 0 0;
+      display: none;
+      flex-direction: column;
+      background: #1f2633;
+      z-index: 30;
+    }
+
+    .viewer.active {
+      display: flex;
+    }
+
+    .viewer header {
+      background: #111827;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+
+    .viewer .icon-btn {
+      color: #fff;
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.14);
+    }
+
+    .viewer .subtitle {
+      color: rgba(255,255,255,.65);
+    }
+
+    .viewer-body {
+      flex: 1;
+      overflow: auto;
+      padding: 16px 22px 20px;
+      scrollbar-width: none;
+    }
+
+    .viewer-body::-webkit-scrollbar { display: none; }
+
+    .pdf-page {
+      min-height: 468px;
+      margin: 0 auto 14px;
+      padding: 22px 18px;
+      border-radius: 7px;
+      background: #fff;
+      box-shadow: 0 16px 34px rgba(0,0,0,.28);
+      color: #111827;
+    }
+
+    .pdf-page h4 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.3;
+      text-align: center;
+      font-weight: 950;
+    }
+
+    .doc-sub {
+      margin: 7px 0 17px;
+      color: #6b7280;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .doc-line {
+      height: 9px;
+      margin: 9px 0;
+      border-radius: 999px;
+      background: #e5e7eb;
+    }
+
+    .doc-line.short { width: 62%; }
+    .doc-line.mid { width: 78%; }
+
+    .chart {
+      height: 126px;
+      display: flex;
+      align-items: end;
+      gap: 9px;
+      padding: 15px 12px 10px;
+      margin: 18px 0;
+      border-radius: 12px;
+      background: #f5f7fb;
+      border: 1px solid #e5e7eb;
+    }
+
+    .bar {
+      flex: 1;
+      height: var(--h);
+      border-radius: 9px 9px 3px 3px;
+      background: var(--brand);
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 92px;
+      display: none;
+      width: max-content;
+      max-width: calc(100% - 40px);
+      transform: translateX(-50%);
+      padding: 10px 13px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(17, 24, 39, .88);
+      font-size: 12px;
+      line-height: 1.35;
+      z-index: 60;
+    }
+
+    .toast.active {
+      display: block;
+    }
+
+    @media (max-height: 760px) {
+      .phone { min-height: 650px; }
+      .hero { min-height: 225px; }
+      .product-visual { transform: scale(.9); transform-origin: right bottom; }
+      .pdf-page { min-height: 410px; }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        align-items: stretch;
+        justify-content: flex-start;
+      }
+
+      .stage {
+        max-width: none;
+        min-height: 100vh;
+        justify-content: flex-start;
+        padding: 0;
+      }
+
+      .phone {
+        width: min(100vw, 390px);
+        height: 100vh;
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="phone">
+      <div class="statusbar">
+        <span>15:00</span>
+        <div class="signal" aria-hidden="true">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14.5h2.5v5H4zM9 11h2.5v8.5H9zM14 7.5h2.5v12H14zM19 4h1.5v15.5H19z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <main class="app">
+        <header>
+          <div class="navline">
+            <button class="icon-btn" type="button" aria-label="返回">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"></path>
+              </svg>
+            </button>
+            <div class="title">
+              <h1>TrackEasy 溯源</h1>
+              <div class="subtitle">获取产品质检报告</div>
+            </div>
+            <button class="icon-btn" type="button" aria-label="更多">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="12" r="1.5"></circle>
+                <circle cx="12" cy="12" r="1.5"></circle>
+                <circle cx="18" cy="12" r="1.5"></circle>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <section class="main">
+          <section class="hero" aria-label="溯源首页">
+            <div class="hero-copy">
+              <h2>全程检测<br />从源头守护</h2>
+              <p>扫码进入默认展示报告；批次异常时可手工查询。</p>
+            </div>
+            <div class="product-visual" aria-hidden="true">
+              <div class="pack">TrackEasy<br />Infant<br />Formula</div>
+              <div class="can"></div>
+            </div>
+            <div class="hero-actions">
+              <button class="quick" type="button" data-action="scan-success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 7V5a1 1 0 0 1 1-1h2"></path>
+                  <path d="M17 4h2a1 1 0 0 1 1 1v2"></path>
+                  <path d="M20 17v2a1 1 0 0 1-1 1h-2"></path>
+                  <path d="M7 20H5a1 1 0 0 1-1-1v-2"></path>
+                  <path d="M7 12h10"></path>
+                </svg>
+                扫码识别
+              </button>
+              <button class="quick" type="button" data-action="open-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 7h16M4 12h16M4 17h10"></path>
+                </svg>
+                手工查询
+              </button>
+            </div>
+          </section>
+
+          <div class="notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 9v4"></path>
+              <path d="M12 17h.01"></path>
+              <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path>
+            </svg>
+            <div>
+              <strong>页面策略</strong>
+              <span>报告弹框进入页面默认展示；用户返回溯源页后，也可通过手工查询输入批次号查看报告。</span>
+            </div>
+          </div>
+
+          <div class="section-title">方案路径</div>
+          <div class="path-list">
+            <div class="path-card">
+              <span class="path-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 7V5a1 1 0 0 1 1-1h2"></path>
+                  <path d="M17 4h2a1 1 0 0 1 1 1v2"></path>
+                  <path d="M7 12h10"></path>
+                  <path d="M20 17v2a1 1 0 0 1-1 1h-2"></path>
+                  <path d="M7 20H5a1 1 0 0 1-1-1v-2"></path>
+                </svg>
+              </span>
+              <div>
+                <strong>数据完整，点击即可查看</strong>
+                <span>上传数据完整，二维码可识别批次与报告关系。</span>
+              </div>
+              <span class="pill">直达</span>
+            </div>
+            <div class="path-card">
+              <span class="path-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 7h16M4 12h16M4 17h10"></path>
+                </svg>
+              </span>
+              <div>
+                <strong>手工查询，输入批次号查看</strong>
+                <span>二维码无法识别或用户主动查询时，输入批次号匹配报告。</span>
+              </div>
+              <span class="pill blue">补查</span>
+            </div>
+          </div>
+
+          <section class="info-card">
+            <h3>溯源信息调整</h3>
+            <div class="field-grid">
+              <div class="field">
+                <label>保留</label>
+                <strong>采奶时间</strong>
+              </div>
+              <div class="field">
+                <label>保留</label>
+                <strong>生产日期</strong>
+              </div>
+              <div class="field">
+                <label>保留</label>
+                <strong>成品送检日期</strong>
+              </div>
+              <div class="field">
+                <label>保留</label>
+                <strong>出口日期</strong>
+              </div>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button class="btn secondary" type="button" data-action="open-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7h16M4 12h16M4 17h10"></path>
+              </svg>
+              手工查询
+            </button>
+            <button class="btn primary" type="button" data-action="scan-success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7V5a1 1 0 0 1 1-1h2"></path>
+                <path d="M17 4h2a1 1 0 0 1 1 1v2"></path>
+                <path d="M7 12h10"></path>
+                <path d="M20 17v2a1 1 0 0 1-1 1h-2"></path>
+                <path d="M7 20H5a1 1 0 0 1-1-1v-2"></path>
+              </svg>
+              模拟扫码
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <section class="overlay" id="inputModal" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="inputTitle">
+          <div class="modal-head">
+            <div>
+              <h3 id="inputTitle">手工查询</h3>
+              <p>输入产品批次号，系统匹配对应质检报告。</p>
+            </div>
+            <button class="icon-btn" type="button" aria-label="关闭" data-action="close-input">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="batch-box">
+              <label class="input-label" for="batchInput">批次号</label>
+              <input id="batchInput" class="batch-input" value="TE260727A" inputmode="text" />
+              <button class="btn primary" type="button" data-action="manual-query">点击查看质检报告</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="overlay active" id="reportModal" aria-hidden="false">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+          <div class="modal-head">
+            <div>
+              <h3 id="reportTitle">质检报告</h3>
+              <p>批次号匹配成功，当前弹层只展示报告入口。</p>
+            </div>
+            <button class="icon-btn" type="button" aria-label="关闭" data-action="close-report">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 6 6 18M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body report-panel">
+            <div class="batch-no" id="batchNo">批次号 TE260727A</div>
+            <button class="report-tile" type="button" data-action="open-viewer">
+              <span>
+                <strong>质检报告</strong>
+                <span>点击打开完整 PDF</span>
+              </span>
+            </button>
+            <div class="modal-actions">
+              <button class="btn primary" type="button" data-action="open-viewer">打开质检报告PDF</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="viewer" id="pdfViewer" aria-hidden="true">
+        <header>
+          <div class="navline">
+            <button class="icon-btn" type="button" aria-label="返回报告入口" data-action="close-viewer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"></path>
+              </svg>
+            </button>
+            <div class="title">
+              <h1>PDF 文档预览</h1>
+              <div class="subtitle">系统独立页面 · 质检报告.pdf</div>
+            </div>
+            <button class="icon-btn" type="button" aria-label="分享">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <path d="M8.6 10.6 15.4 6.4M8.6 13.4l6.8 4.2"></path>
+              </svg>
+            </button>
+          </div>
+        </header>
+        <div class="viewer-body">
+          <article class="pdf-page">
+            <h4>TrackEasy 产品质检报告</h4>
+            <div class="doc-sub">批次号 TE260727A · 第 1 页</div>
+            <div class="doc-line"></div>
+            <div class="doc-line mid"></div>
+            <div class="doc-line short"></div>
+            <div class="chart">
+              <span class="bar" style="--h: 48%"></span>
+              <span class="bar" style="--h: 72%"></span>
+              <span class="bar" style="--h: 58%"></span>
+              <span class="bar" style="--h: 86%"></span>
+              <span class="bar" style="--h: 65%"></span>
+            </div>
+            <div class="doc-line"></div>
+            <div class="doc-line"></div>
+            <div class="doc-line mid"></div>
+            <div class="doc-line short"></div>
+          </article>
+          <article class="pdf-page">
+            <h4>检测项目与结论</h4>
+            <div class="doc-sub">批次号 TE260727A · 第 2 页</div>
+            <div class="doc-line"></div>
+            <div class="doc-line mid"></div>
+            <div class="doc-line"></div>
+            <div class="chart">
+              <span class="bar" style="--h: 82%; background:#0879bd"></span>
+              <span class="bar" style="--h: 55%; background:#0879bd"></span>
+              <span class="bar" style="--h: 76%; background:#0879bd"></span>
+              <span class="bar" style="--h: 44%; background:#0879bd"></span>
+            </div>
+            <div class="doc-line"></div>
+            <div class="doc-line short"></div>
+          </article>
+        </div>
+      </section>
+
+      <div class="toast" id="toast">批次号匹配成功</div>
+    </div>
+  </div>
+
+  <script>
+    const inputModal = document.getElementById("inputModal");
+    const reportModal = document.getElementById("reportModal");
+    const pdfViewer = document.getElementById("pdfViewer");
+    const batchInput = document.getElementById("batchInput");
+    const batchNo = document.getElementById("batchNo");
+    const toast = document.getElementById("toast");
+
+    function setLayer(el, visible) {
+      el.classList.toggle("active", visible);
+      el.setAttribute("aria-hidden", visible ? "false" : "true");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("active");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("active"), 1500);
+    }
+
+    function openReport(batch, message) {
+      batchNo.textContent = `批次号 ${batch || "TE260727A"}`;
+      setLayer(inputModal, false);
+      setLayer(reportModal, true);
+      if (message) showToast(message);
+    }
+
+    document.addEventListener("click", (event) => {
+      const trigger = event.target.closest("[data-action]");
+      if (!trigger) return;
+
+      const action = trigger.dataset.action;
+      if (action === "scan-success") openReport("TE260727A", "扫码识别成功");
+      if (action === "open-input") setLayer(inputModal, true);
+      if (action === "close-input") setLayer(inputModal, false);
+      if (action === "manual-query") openReport(batchInput.value.trim(), "批次号匹配成功");
+      if (action === "close-report") setLayer(reportModal, false);
+      if (action === "open-viewer") {
+        setLayer(reportModal, false);
+        setLayer(pdfViewer, true);
+        showToast("已模拟打开系统 PDF 预览页");
+      }
+      if (action === "close-viewer") {
+        setLayer(pdfViewer, false);
+        setLayer(reportModal, true);
+      }
+    });
+
+    [inputModal, reportModal].forEach((modal) => {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) setLayer(modal, false);
+      });
+    });
+
+    const initialState = new URLSearchParams(window.location.search).get("state");
+    if (initialState === "input") {
+      setLayer(reportModal, false);
+      setLayer(inputModal, true);
+    }
+    if (initialState === "viewer") {
+      setLayer(reportModal, false);
+      setLayer(pdfViewer, true);
+    }
+  </script>
+</body>
+</html>
